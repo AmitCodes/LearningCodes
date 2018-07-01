@@ -1,0 +1,289 @@
+#include<iostream>
+using namespace std;
+#include<malloc.h>
+
+typedef struct Node
+{
+    int data;
+    Node *left;
+    Node *right;
+    Node *parent;
+    int height;
+}Node;
+
+Node *start = NULL;
+
+void bst_insert(Node *nodeToAdd);
+void printTree(Node *root);
+void update_heights(Node *root);
+int height_difference(Node *left , Node *right);
+void rotate_to_balance(Node *node);
+void rotate_left(Node *node);
+void rotate_right(Node *node);
+void balance_tree(Node *nodeToAdd);;
+
+int main()
+{
+    Node *temp = (Node*)malloc(sizeof(Node));
+    temp->data = 25;
+    bst_insert (temp);
+    Node *temp1 = (Node*)malloc(sizeof(Node));
+    temp1->data = 26;
+    bst_insert (temp1);
+    Node *temp2 = (Node*)malloc(sizeof(Node));
+    temp2->data = 95;
+    bst_insert (temp2);
+    Node *temp3 = (Node*)malloc(sizeof(Node));
+    temp3->data = 28;
+    bst_insert (temp3);
+    Node *temp4 = (Node*)malloc(sizeof(Node));
+    temp4->data = 67;
+    bst_insert (temp4);
+    Node *temp5 = (Node*)malloc(sizeof(Node));
+    temp5->data = 30;
+    bst_insert (temp5);
+    Node *temp6 = (Node*)malloc(sizeof(Node));
+    temp6->data = 79;
+    bst_insert (temp6);
+    Node *temp7 = (Node*)malloc(sizeof(Node));
+    temp7->data = 34;
+    bst_insert (temp7);
+   // printTree(start);
+}
+
+void bst_insert(Node *nodeToAdd)
+{
+    nodeToAdd->left = NULL;
+    nodeToAdd->right = NULL;
+    nodeToAdd->height = 0;
+    Node *temp = start;
+    if(start != NULL)
+    cout<<"start data "<<start->data<<endl;
+    if(start == NULL)
+    {
+        start = nodeToAdd;
+        start->parent = NULL;
+        start->height = 0;
+    }
+    else
+    {
+        Node *previousNode;
+        while(temp !=NULL)
+        {
+            previousNode = temp;
+            if(nodeToAdd->data < temp->data)
+            {
+                temp = temp->left;
+            }
+            else
+            {
+                temp = temp->right;
+            }
+        }
+        if(nodeToAdd->data < previousNode->data )
+        {
+            previousNode->left = nodeToAdd;
+        }
+        else
+        {
+            previousNode->right = nodeToAdd;
+        }
+        nodeToAdd->parent = previousNode;
+    }
+    update_heights(nodeToAdd);
+    cout<<"after updating heights"<<endl;
+    printTree(start);
+    balance_tree(nodeToAdd);
+    cout<<"after balancing tree"<<endl;
+    printTree(start);
+}
+
+void printTree(Node *root)
+{
+    if(root != NULL)
+    {
+        static int parentdata = -30;
+        printTree(root->left);
+
+        if(root->parent != NULL)
+        {
+            parentdata = root->parent->data;
+        }
+        cout<<"element...."<<root->data<<" height..."<<root->height<<" parent " <<parentdata<<endl;
+        printTree(root->right);
+    }
+}
+
+void update_heights(Node *node)
+{
+    cout<<"update heights" <<node->data <<endl;
+    if(node->parent == NULL)
+    {
+        return;
+    }
+    if(node->parent->height <= node->height + 1)
+    {
+        node->parent->height = node->height + 1;
+        update_heights(node->parent);
+    }
+    else if(node->parent->height > node->height + 1)
+    {
+        if((node->parent->left && node->parent->left->height + 1 == node->parent->height)
+           || (node->parent->right && node->parent->right->height + 1 == node->parent->height) )
+        {
+
+        }
+        else
+        {
+            node->parent->height = node->height + 1;
+            update_heights(node->parent);
+        }
+    }
+}
+
+int height_difference(Node *left , Node *right)
+{
+    int left_height = -1 , right_height = -1;
+    if(left)
+    {
+        left_height = left->height;
+    }
+    if(right)
+    {
+        right_height = right->height;
+    }
+    return (left_height - right_height);
+}
+
+
+void balance_tree(Node *nodeAdded)
+{
+    if(nodeAdded == NULL)
+        return;
+    int height = height_difference(nodeAdded->left , nodeAdded->right);
+    if(height >= 2 || height <= -2)
+    {
+        cout<<"height difference greater than 2 on "<<nodeAdded->data<<endl;
+        rotate_to_balance(nodeAdded);
+    }
+    balance_tree(nodeAdded->parent);
+}
+
+void rotate_to_balance(Node *node)
+{
+    if(node == NULL)
+        return;
+            cout<< "height difference......."<<height_difference(node->left ,node->right) <<endl;
+    if(height_difference(node->left ,node->right) > 0)
+    {
+        if(height_difference(node->left->left , node->left->right) < 0)
+        {
+            cout<<"rotate left"<<endl;
+            rotate_left(node->left);
+        }
+            cout<<"rotate right"<<endl;
+            rotate_right(node);
+    }
+    else
+    {
+        if(height_difference(node->right->left , node->right->right) > 0)
+        {
+            cout<<"rotate right"<<endl;
+            rotate_right(node->right);
+        }
+            cout<<"rotate left"<<endl;
+            rotate_left(node);
+    }
+}
+
+void rotate_right(Node *node)
+{
+    cout<<"rotate_right on " <<node->data<<endl;
+    if(node == NULL)
+    {
+        return;
+    }
+
+    Node *nodeLeft = node->left;
+    if(node->parent != NULL)
+    {
+        if(node->parent->left == node)
+        {
+        cout<<"if"<<endl;
+            node->parent->left = node->left;
+        }
+        else
+        {
+        cout<<"else"<<endl;
+            node->parent->right = node->left;
+        }
+    }
+    else
+    {
+        start = node->left;
+    }
+
+        cout<<".....1....."<<endl;
+    if(node->left)
+    node->left->parent = node->parent;
+        cout<<".....2....."<<endl;
+    node->parent = node->left;
+        cout<<".....3....."<<endl;
+    if(node->left)
+    node->left = node->left->right;
+        cout<<".....4....."<<endl;
+    nodeLeft->right = node;
+        cout<<".....5....."<<endl;
+
+    if(node->left)
+    node->left->parent = node;
+    node->height = 0;
+    update_heights(node);
+    start->parent = NULL;
+}
+
+void rotate_left(Node *node)
+{
+
+    cout<<"rotate_left on "<<node->data<<endl;
+    if(node == NULL)
+    {
+        return;
+    }
+    if(node->parent != NULL)
+    {
+        if(node->parent->left == node)
+        {
+            node->parent->left = node->right;
+        }
+        else
+        {
+            node->parent->right = node->right;;
+        }
+    }
+    else
+    {
+        start = node->right;
+    }
+
+    Node *nodeRight = node->right;
+    if(!nodeRight)
+    {
+        cout<<"No right child. Thus can't be rotated"<<endl;
+        return;
+    }
+        cout<<".....1....."<<endl;
+    nodeRight->parent = node->parent;
+        cout<<".....2....."<<endl;
+    node->right = nodeRight->left;
+        cout<<".....3....."<<endl;
+    if(node->right)
+    node->right->parent = node;
+        cout<<".....4....."<<endl;
+    nodeRight->left = node;
+        cout<<".....5....."<<endl;
+    node->parent = nodeRight;
+    node->height = 0;
+    update_heights(node);
+    start->parent = NULL;
+}
